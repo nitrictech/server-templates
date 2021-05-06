@@ -1,0 +1,4 @@
+templates:
+  - name: nextjs-typescript
+    lang: typescript
+    path: /templates/nextjs-typescript
