@@ -36,6 +36,13 @@ COPY --from=build /next.config.js /next.config.js
 COPY --from=build /public/ /public/
 COPY --from=build /.next/ /.next/
 
+RUN rm -rf /.next/cache
+RUN mkdir /tmp/cache/
+
+# Create a symlink for the cache directory
+# This is required to allow next to run on a number of restricted container platforms
+RUN ln -sf /tmp/cache /.next/
+
 # Set the mode to HTTP PROXY
 ENV MEMBRANE_MODE="HTTP_PROXY"
 
@@ -44,6 +51,9 @@ ENV CHILD_ADDRESS="localhost:3000"
 # Expose the gateways proxy port
 EXPOSE 9001/tcp
 # ENV PROXY_PORT="9001"
+
+# Set yarn cache directory to /tmp/
+# ENV YARN_CACHE_FOLDER=/tmp/yarn_cache
 
 # AWS Lambda requires the working directory to be explicitly set
 WORKDIR /
