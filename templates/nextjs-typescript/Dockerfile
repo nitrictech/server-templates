@@ -26,8 +26,7 @@ ENV YARN_CACHE_FOLDER=/dev/shm/yarn_cache
 COPY --from=membrane /membrane /usr/local/bin/membrane
 RUN chmod +x-rw /usr/local/bin/membrane
 
-COPY --from=build package.json package.json
-COPY --from=build .env* *.lock Dockerfile /
+COPY --from=build package.json .env* *.lock /
 RUN yarn install --production --frozen-lockfile
 
 COPY --from=build /next.config.js /next.config.js
