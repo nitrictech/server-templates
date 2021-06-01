@@ -8,15 +8,13 @@ ENV YARN_CACHE_FOLDER=/dev/shm/yarn_cache
 
 # Copy and install dependencies before function code
 # this avoids reinstalling unchanged dependencies on each code change
-COPY ./function/package.json /package.json
-COPY ./function/*.lock Dockerfile /
-COPY ./function/*-lock.json Dockerfile /
+COPY package.json *.lock *-lock.json /
 
 RUN yarn import || echo "lockfile already exists"
 
 RUN yarn install --frozen-lockfile
 # Copy sources
-COPY /function .
+COPY . .
 # Build it
 RUN yarn build
 
