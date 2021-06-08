@@ -2,36 +2,17 @@ ARG PROVIDER=local
 FROM nitricimages/membrane-${PROVIDER}:latest as membrane
 FROM node:alpine as build
 
-# FIXME: Remove once the @nitric/sdk package is made public
-# Token should be read-only and revoked once this package is public
-ENV YARN_CACHE_FOLDER=/dev/shm/yarn_cache
-
 # Copy and install dependencies before function code
 # this avoids reinstalling unchanged dependencies on each code change
 COPY package.json *.lock *-lock.json /
 
 RUN yarn import || echo "lockfile already exists"
 
-RUN yarn install --frozen-lockfile
+RUN set -ex; yarn install --frozen-lockfile --cache-folder /tmp/.cache; rm -rf /tmp/.cache;
 # Copy sources
 COPY . .
 # Build it
 RUN yarn build
-
-FROM node:alpine
-RUN apk --no-cache add ca-certificates
-
-ENV YARN_CACHE_FOLDER=/dev/shm/yarn_cache
-# Add the membrane server binary and plugins
-COPY --from=membrane /membrane /usr/local/bin/membrane
-RUN chmod +x-rw /usr/local/bin/membrane
-
-COPY --from=build package.json .env* *.lock /
-RUN yarn install --production --frozen-lockfile
-
-COPY --from=build /next.config.js /next.config.js
-COPY --from=build /public/ /public/
-COPY --from=build /.next/ /.next/
 
 # Remove the original cache
 RUN rm -rf /.next/cache
@@ -54,6 +35,9 @@ ENV YARN_CACHE_FOLDER=/tmp/yarn_cache
 
 # AWS Lambda requires the working directory to be explicitly set
 WORKDIR /
+
+COPY --from=membrane /membrane /usr/local/bin/membrane
+RUN chmod +x-rw /usr/local/bin/membrane
 
 # Run the Nitric Membrane
 # This process will load membrane provider plugins and kick-off the userland process
