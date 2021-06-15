@@ -1,6 +1,6 @@
 ARG PROVIDER=local
 FROM nitricimages/membrane-${PROVIDER}:latest as membrane
-FROM node:alpine as build
+FROM node:14-alpine as build
 
 # Copy and install dependencies before function code
 # this avoids reinstalling unchanged dependencies on each code change
