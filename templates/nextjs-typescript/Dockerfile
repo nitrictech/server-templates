@@ -4,10 +4,15 @@ FROM node:14-alpine as build
 
 # Copy and install dependencies before function code
 # this avoids reinstalling unchanged dependencies on each code change
-COPY package.json *.lock *-lock.json /
+COPY package.json *.lock *-lock.json /app/
+
+# AWS Lambda requires the working directory to be explicitly set
+# Don't remove this without replacing it
+WORKDIR /app
 
 RUN yarn import || echo "lockfile already exists"
 
+# Install dependencies and delete the cache
 RUN set -ex; yarn install --frozen-lockfile --cache-folder /tmp/.cache; rm -rf /tmp/.cache;
 # Copy sources
 COPY . .
@@ -15,11 +20,11 @@ COPY . .
 RUN yarn build
 
 # Remove the original cache
-RUN rm -rf /.next/cache
+RUN rm -rf ./.next/cache
 
 # Create a symlink for the cache directory
 # This is required to allow next to run on a number of restricted container platforms
-RUN ln -sf /tmp/ /.next/cache
+RUN ln -sf /tmp/ ./.next/cache
 
 # Set the mode to HTTP PROXY
 ENV MEMBRANE_MODE="HTTP_PROXY"
@@ -32,9 +37,6 @@ EXPOSE 9001/tcp
 
 # Set yarn cache directory to /tmp/
 ENV YARN_CACHE_FOLDER=/tmp/yarn_cache
-
-# AWS Lambda requires the working directory to be explicitly set
-WORKDIR /
 
 COPY --from=membrane /membrane /usr/local/bin/membrane
 RUN chmod +x-rw /usr/local/bin/membrane
