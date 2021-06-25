@@ -47,4 +47,4 @@ RUN chmod +x-rw /usr/local/bin/membrane
 ENTRYPOINT ["/usr/local/bin/membrane"]
 
 # Set membrane child process command and args
-CMD ["yarn", "start"]
+CMD ["yarn", "start", "--port", "3000"]
