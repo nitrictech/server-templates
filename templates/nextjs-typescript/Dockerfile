@@ -16,6 +16,8 @@ RUN yarn import || echo "lockfile already exists"
 RUN set -ex; yarn install --frozen-lockfile --cache-folder /tmp/.cache; rm -rf /tmp/.cache;
 # Copy sources
 COPY . .
+# Set permissions for next so we don't get a 126 error on yarn build
+RUN chmod a+x /app/node_modules/.bin/next
 # Build it
 RUN yarn build
 
